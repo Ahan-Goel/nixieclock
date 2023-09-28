@@ -6,10 +6,10 @@ RTCDateTime dt;
 
 int outputpins[] = {3,4,5,6,7,8,9,10,11,12};
 int inputpins[]  = {4,5};
-int out_pin_num  = 12;
-int in_pin_num   = 3;
+int out_pin_num  = 10;
+int in_pin_num   = 2;
 int in_loop, out_loop;
-
+int shiftarray[4][10];
 
 
 
@@ -32,7 +32,7 @@ void loop() {
   int i, hours, minutes, seconds, ledout, hour1, hour2, min1, min2;
   int hour1_digit, hour2_digit, min1_digit, min2_digit;
 
-  dt = clock.getDateTime();\
+  dt = clock.getDateTime();
   hours   = dt.hour;
   minutes = dt.minute;
   seconds = dt.second;
