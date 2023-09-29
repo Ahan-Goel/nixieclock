@@ -1,5 +1,7 @@
+#include <Arduino.h>
 #include <Wire.h>
 #include <DS3231.h>
+#include <header.h>
 
 DS3231 clock;
 RTCDateTime dt;
@@ -12,19 +14,18 @@ int in_loop, out_loop;
 int shiftarray[4][10];
 
 
-
 void setup() {
   // put your setup code here, to run once:
   for (in_loop = 0; in_loop < in_pin_num; in_loop++){
     pinMode(inputpins[in_loop], INPUT);
   }
-  for (in_loop = 0; out_loop < out_pin_num; out_loop++){
-    pinMode(inputpins[out_loop], OUTPUT);
+  for (out_loop = 0; out_loop < out_pin_num; out_loop++){
+    pinMode(outputpins[out_loop], OUTPUT);
   }
   Serial.begin(9600);
   clock.begin();
   // Set sketch compiling time
-  clock.setDateTime(__DATE__,__TIME__);
+  clock.setDateTime(__DATE__, __TIME__);
 }
 
 void loop() {
@@ -69,13 +70,11 @@ void loop() {
   min1_digit  = dec2bin(min1);
   min2_digit  = dec2bin(min2);
 
-  Serial.print(hour1);
+  Serial.print(hours);
   Serial.print(":");
-  Serial.print(hour2);
+  Serial.print(minutes);
   Serial.print(":");
-  Serial.print(min1);
-  Serial.print(":");
-  Serial.print(min2);
+  Serial.print(seconds);
   Serial.print(" Digits to be shifted: ");
   Serial.print(hour1_digit);
   Serial.print(":");
