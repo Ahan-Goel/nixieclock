@@ -5,16 +5,14 @@
 DS3232RTC myRTC;
 
 int outputpins[] = {6,8,7};
-int inputpins[]  = {};
+int inputpins[]  = {4,5};
 int out_pin_num  = 3;
-int in_pin_num   = 0;
+int in_pin_num   = 2;
 int in_loop, out_loop;
 
-int i, hours, minutes, seconds, ledout, hour1, hour2, min1, min2, second1, second2; // Time variables
-int hour1_digit, hour2_digit, min1_digit, min2_digit; // Digits of the clock
-int xd[10] = {1,0,9,8,7,6,5,4,3,2};
-
 byte shiftarray[5];
+int xd[10] = {1,0,9,8,7,6,5,4,3,2};
+int hour1_digit, hour2_digit, min1_digit, min2_digit; // Digits of the clock
 
 
 void setup() {
@@ -33,6 +31,8 @@ void loop() {
   static time_t tLast;
   time_t t;
   tmElements_t tm;
+  int hours, minutes, seconds;
+  int hour1, hour2, min1, min2, second1, second2;
 
   if (Serial.available() >= 12) { 
       // Code to set RTC time via Serial Monitor
@@ -51,20 +51,9 @@ void loop() {
   }
 
 
-  hours   = 0;//hour();
-  minutes = 0;//minute();
-  seconds = 0;//second();
+  hours   = hour();
+  minutes = minute();
 
-  ledout = seconds % 10;
-
-  hour1   = hours / 10;
-  hour2   = hours % 10;
-  min1    = minutes / 10;
-  min2    = minutes % 10;
-  second1 = seconds / 10;
-  second2 = seconds % 10;
-  /*
-  
   if ((hour1 == 0) && (hour2 == 0)){
     hour1 = 1;
     hour2 = 2;
@@ -75,53 +64,22 @@ void loop() {
     hour1   = hours / 10;
     hour2   = hours % 10;
   }
-  */
 
-  writeval(hour1,hour2,min1,min2);
-  prepshift(hour1_digit, hour2_digit, min1_digit, min2_digit);
+  hour1   = hours / 10;
+  hour2   = hours % 10;
+  min1    = minutes / 10;
+  min2    = minutes % 10;
+ 
 
-  digitalWrite(outputpins[2],LOW);
-  for (i=0; i < 5; i++){
-    shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[4-i]);
-  }
-  digitalWrite(outputpins[2],HIGH);
-
-  Serial.print("Date: ");
-  Serial.print(month());
-  Serial.print("/");
-  Serial.print(day());
-  Serial.print("/");
-  Serial.print(year());
-
-  Serial.print("  Time: ");
-  Serial.print(hour1);
-  Serial.print(hour2);
-  Serial.print(":");
-  Serial.print(min1);
-  Serial.print(min2);
-  Serial.print(":");
-  Serial.print(second1);
-  Serial.print(second2);
-
-  Serial.print("  Bytes: ");
-  Serial.print(shiftarray[0], BIN);
-  Serial.print(" ");
-  Serial.print(shiftarray[1], BIN);
-  Serial.print(" ");
-  Serial.print(shiftarray[2], BIN);
-  Serial.print(" ");
-  Serial.print(shiftarray[3], BIN);
-  Serial.print(" ");
-  Serial.println(shiftarray[4], BIN);
+  display(hour1, hour2, min1, min2);
 
   delay(1000);
 }
-
 void writeval(int hour1, int hour2, int min1, int min2){
   hour1_digit = dec2bin(xd[hour1]);
   hour2_digit = dec2bin(xd[hour2]);
   min1_digit  = dec2bin(xd[min1]);
-  min2_digit  = dec2bin(xd[min2+2]);
+  min2_digit  = dec2bin(xd[min2]);
 }
 
 int dec2bin(int exp){
@@ -144,10 +102,10 @@ void prepshift(int value1, int value2, int value3, int value4){
   shiftarray[2] = (value3 << 4) + ((value2 >> 6) & 15);
   // Bits 0-3 of shiftarray[2] are bits 6-9 of value2
   // Bits 4-7 of shiftarray[2] are bits 0-3 of value3
-  shiftarray[3] = (value4 << 1) + ((value3 >> 4) & 63);
+  shiftarray[3] = (value4 << 6) + ((value3 >> 4) & 63);
   // Bits 0-5 of shiftarray[3] are bits 4-9 of value3
   // Bits 6-7 of shiftarray[3] are bits 0-1 of value4
-  shiftarray[4] = (value4 & 0xFF);
+  shiftarray[4] = (value4 >> 2);
   // Bits 0-7 of shiftarray[0] are bits 2-9 of value4
 }
 void clear(){
@@ -158,3 +116,15 @@ void clear(){
   digitalWrite(outputpins[2], HIGH);
 }
 
+void display(int digit1, int digit2, int digit3, int digit4){
+  clear();
+  writeval(digit1,digit2,digit3,digit4);
+  prepshift(hour1_digit, hour2_digit, min1_digit, min2_digit);
+  digitalWrite(outputpins[2],LOW);
+  shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[4]);
+  shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[3]);
+  shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[2]);
+  shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[1]);
+  shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[0]);
+  digitalWrite(outputpins[2],HIGH);
+}
