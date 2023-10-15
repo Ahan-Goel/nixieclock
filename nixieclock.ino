@@ -10,10 +10,7 @@ int out_pin_num  = 3;
 int in_pin_num   = 2;
 int in_loop, out_loop;
 
-byte shiftarray[5];
-int xd[10] = {1,0,9,8,7,6,5,4,3,2};
-int hour1_digit, hour2_digit, min1_digit, min2_digit; // Digits of the clock
-
+byte shiftarray[5]; // Shift array
 
 void setup() {
   for (in_loop = 0; in_loop < in_pin_num; in_loop++){
@@ -26,7 +23,6 @@ void setup() {
     myRTC.begin();
     setSyncProvider(myRTC.get);
 }
-
 void loop() {
   static time_t tLast;
   time_t t;
@@ -54,34 +50,26 @@ void loop() {
   hours   = hour();
   minutes = minute();
 
-  if ((hour1 == 0) && (hour2 == 0)){
-    hour1 = 1;
-    hour2 = 2;
+
+  if (hours == 0){
+    hours = 12;
   }
-  // These two if statements turn 24hr time into 12hr time
   if (hours > 12){
     hours   -= 12;
-    hour1   = hours / 10;
-    hour2   = hours % 10;
   }
-
+  
   hour1   = hours / 10;
   hour2   = hours % 10;
   min1    = minutes / 10;
   min2    = minutes % 10;
- 
+  
+
 
   display(hour1, hour2, min1, min2);
+  delay(500);
 
-  delay(1000);
-}
-void writeval(int hour1, int hour2, int min1, int min2){
-  hour1_digit = dec2bin(xd[hour1]);
-  hour2_digit = dec2bin(xd[hour2]);
-  min1_digit  = dec2bin(xd[min1]);
-  min2_digit  = dec2bin(xd[min2]);
-}
 
+}
 int dec2bin(int exp){
   // Turn the time digits into 2^TIME_DIGIT as that is what
   // The shift registers need to show correct value
@@ -89,7 +77,6 @@ int dec2bin(int exp){
   result <<= exp;
   return result;
 }
-
 void prepshift(int value1, int value2, int value3, int value4){
   // Function takes 4 10-bit values and transforms them into
   // 5 8-bit values that can be shifted to registers
@@ -115,11 +102,21 @@ void clear(){
   }
   digitalWrite(outputpins[2], HIGH);
 }
-
 void display(int digit1, int digit2, int digit3, int digit4){
   clear();
-  writeval(digit1,digit2,digit3,digit4);
+
+  int adjust[10] = {1,0,9,8,7,6,5,4,3,2};
+  // Layout Error with imported schematic, not the worst thing we can just change array
+  int hour1_digit, hour2_digit, min1_digit, min2_digit; // Digits of the clock
+
+
+  hour1_digit = dec2bin(adjust[digit1]);
+  hour2_digit = dec2bin(adjust[digit2]);
+  min1_digit  = dec2bin(adjust[digit3]);
+  min2_digit  = dec2bin(adjust[digit4]);
+  
   prepshift(hour1_digit, hour2_digit, min1_digit, min2_digit);
+
   digitalWrite(outputpins[2],LOW);
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[4]);
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[3]);
