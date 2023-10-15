@@ -4,7 +4,7 @@
 
 DS3232RTC myRTC;
 
-int outputpins[] = {6,8,7};
+int outputpins[] = {6,8,7}; // Setting pins of arduino
 int inputpins[]  = {4,5};
 int out_pin_num  = 3;
 int in_pin_num   = 2;
@@ -16,12 +16,15 @@ void setup() {
   for (in_loop = 0; in_loop < in_pin_num; in_loop++){
     pinMode(inputpins[in_loop], INPUT);
   }
+  // Setting input pins
   for (out_loop = 0; out_loop < out_pin_num; out_loop++){
     pinMode(outputpins[out_loop], OUTPUT);
   }
-  Serial.begin(9600);
-    myRTC.begin();
-    setSyncProvider(myRTC.get);
+  // Setting output pins
+
+  //Serial.begin(9600); // remove "//" to create serial monitor
+  myRTC.begin();
+  setSyncProvider(myRTC.get);
 }
 void loop() {
   static time_t tLast;
@@ -29,6 +32,8 @@ void loop() {
   tmElements_t tm;
   int hours, minutes, seconds;
   int hour1, hour2, min1, min2;
+  // Setting local variables
+
 
   if (Serial.available() >= 12) { 
       // Code to set RTC time via Serial Monitor
@@ -46,24 +51,25 @@ void loop() {
       setTime(t);
   }
 
-  hours   = hour();
+  hours   = hour();  // Get time and put into local vars
   minutes = minute();
   seconds = second();
 
 
-  if (hours == 0){
+  if (hours == 0){ // Convert 24hr to 12hr time
     hours = 12;
   }
-  if (hours > 12){
+  if (hours > 12){ // Convert 24hr to 12hr time
     hours   -= 12;
   }
   
-  hour1   = hours / 10;
+  hour1   = hours / 10; // Get the individual digits
   hour2   = hours % 10;
   min1    = minutes / 10;
   min2    = minutes % 10;
   
   display(hour1, hour2, min1, min2);
+  //Display the individual digits and check every second
   delay(1000);
 }
 int dec2bin(int exp){
@@ -92,6 +98,7 @@ void prepshift(int value1, int value2, int value3, int value4){
   // Bits 0-7 of shiftarray[0] are bits 2-9 of value4
 }
 void clear(){
+  //Clears the clock by setting all transistors to low/out of saturation
   digitalWrite(outputpins[2], LOW);
   for(int i = 0; i < 5; i++){
     shiftOut(outputpins[0], outputpins[1], MSBFIRST, 0);
@@ -102,24 +109,27 @@ void display(int digit1, int digit2, int digit3, int digit4){
   clear();
 
   int adjust[10] = {1,0,9,8,7,6,5,4,3,2};
-  // Layout Error with imported schematic, not the worst thing we can just change array
+  // Layout Error with imported schematic, not the worst thing we can just change with an array
+
   int hour1_digit, hour2_digit, min1_digit, min2_digit; // Digits of the clock
 
-
-  hour1_digit = dec2bin(adjust[digit1]);
+  // Figure out the number in binary we have to shift for each digit
+  hour1_digit = dec2bin(adjust[digit1]); 
   hour2_digit = dec2bin(adjust[digit2]);
   min1_digit  = dec2bin(adjust[digit3]);
   min2_digit  = dec2bin(adjust[digit4]);
   
   prepshift(hour1_digit, hour2_digit, min1_digit, min2_digit);
+  // Prepare the shift by putting the numbers into their arrays
 
-  digitalWrite(outputpins[2],LOW);
+  digitalWrite(outputpins[2],LOW); // Set clock pin low
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[4]);
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[3]);
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[2]);
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[1]);
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[0]);
-  digitalWrite(outputpins[2],HIGH);
+  digitalWrite(outputpins[2],HIGH); // Set clock pin high
+  // Once done shifting the shifting registers push their vals onto the register with a rising edge clock pulse
 }
 void printSerial(int hour, int min, int sec){
   Serial.print("Time: ");
