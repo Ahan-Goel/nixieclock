@@ -28,7 +28,7 @@ void loop() {
   time_t t;
   tmElements_t tm;
   int hours, minutes, seconds;
-  int hour1, hour2, min1, min2, second1, second2;
+  int hour1, hour2, min1, min2;
 
   if (Serial.available() >= 12) { 
       // Code to set RTC time via Serial Monitor
@@ -49,6 +49,7 @@ void loop() {
 
   hours   = hour();
   minutes = minute();
+  seconds = second();
 
 
   if (hours == 0){
@@ -63,12 +64,8 @@ void loop() {
   min1    = minutes / 10;
   min2    = minutes % 10;
   
-
-
   display(hour1, hour2, min1, min2);
-  delay(500);
-
-
+  delay(1000);
 }
 int dec2bin(int exp){
   // Turn the time digits into 2^TIME_DIGIT as that is what
@@ -124,4 +121,12 @@ void display(int digit1, int digit2, int digit3, int digit4){
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[1]);
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[0]);
   digitalWrite(outputpins[2],HIGH);
+}
+void printSerial(int hour, int min, int sec){
+  Serial.print("Time: ");
+  Serial.print(hour);
+  Serial.print(":");
+  Serial.print(min);
+  Serial.print(":");
+  Serial.println(sec);
 }
