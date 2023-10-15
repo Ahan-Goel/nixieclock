@@ -46,7 +46,6 @@ void loop() {
       setTime(t);
   }
 
-
   hours   = hour();
   minutes = minute();
   seconds = second();
