@@ -13,6 +13,7 @@ int in_loop, out_loop;
 byte shiftarray[5]; // Shift array
 
 void setup() {
+  clear();
   for (in_loop = 0; in_loop < in_pin_num; in_loop++){
     pinMode(inputpins[in_loop], INPUT);
   }
@@ -22,9 +23,10 @@ void setup() {
   }
   // Setting output pins
 
-  //Serial.begin(9600); // remove "//" to create serial monitor
+  Serial.begin(9600); // remove "//" to create serial monitor
   myRTC.begin();
   setSyncProvider(myRTC.get);
+  clear();
 }
 void loop() {
   static time_t tLast;
@@ -55,21 +57,22 @@ void loop() {
   minutes = minute();
   seconds = second();
 
-
+  ///*
   if (hours == 0){ // Convert 24hr to 12hr time
     hours = 12;
   }
   if (hours > 12){ // Convert 24hr to 12hr time
     hours   -= 12;
   }
-  
+  //*/
   hour1   = hours / 10; // Get the individual digits
   hour2   = hours % 10;
   min1    = minutes / 10;
   min2    = minutes % 10;
-  
-  display(hour1, hour2, min1, min2);
+ 
+  display(hour1, hour2, min1,min2);
   //Display the individual digits and check every second
+  //printSerial(hours, minutes, seconds);
   delay(1000);
 }
 int dec2bin(int exp){
