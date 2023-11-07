@@ -9,6 +9,8 @@ int inputpins[]  = {4,5};
 int out_pin_num  = 3;
 int in_pin_num   = 2;
 int in_loop, out_loop;
+bool daylight_savings = false
+;
 
 byte shiftarray[5]; // Shift array
 
@@ -28,6 +30,7 @@ void setup() {
   setSyncProvider(myRTC.get);
   clear();
 }
+
 void loop() {
   static time_t tLast;
   time_t t;
@@ -53,18 +56,22 @@ void loop() {
       setTime(t);
   }
 
-  hours   = hour();  // Get time and put into local vars
+  hours   = hour();  // Get time and put into local vars (remove -1 for daylight savings)
   minutes = minute();
   seconds = second();
 
-  ///*
+  if (daylight_savings){
+    hours -= 1;
+  }
+  
+  /*
   if (hours == 0){ // Convert 24hr to 12hr time
     hours = 12;
   }
   if (hours > 12){ // Convert 24hr to 12hr time
     hours   -= 12;
   }
-  //*/
+  */
   hour1   = hours / 10; // Get the individual digits
   hour2   = hours % 10;
   min1    = minutes / 10;
@@ -72,7 +79,14 @@ void loop() {
  
   display(hour1, hour2, min1,min2);
   //Display the individual digits and check every second
-  //printSerial(hours, minutes, seconds);
+  
+  Serial.print(hours);
+  Serial.print(":");
+  Serial.print(minutes);
+  Serial.print(":");
+  Serial.println(seconds);
+  //Debugging code
+
   delay(1000);
 }
 int dec2bin(int exp){
@@ -133,12 +147,4 @@ void display(int digit1, int digit2, int digit3, int digit4){
   shiftOut(outputpins[0],outputpins[1],MSBFIRST,shiftarray[0]);
   digitalWrite(outputpins[2],HIGH); // Set clock pin high
   // Once done shifting the shifting registers push their vals onto the register with a rising edge clock pulse
-}
-void printSerial(int hour, int min, int sec){
-  Serial.print("Time: ");
-  Serial.print(hour);
-  Serial.print(":");
-  Serial.print(min);
-  Serial.print(":");
-  Serial.println(sec);
 }
