@@ -9,8 +9,8 @@ int inputpins[]  = {4,5};
 int out_pin_num  = 3;
 int in_pin_num   = 2;
 int in_loop, out_loop;
-bool daylight_savings = false
-;
+bool daylight_savings = false;
+bool twelve_hr_time = false;
 
 byte shiftarray[5]; // Shift array
 
@@ -64,27 +64,29 @@ void loop() {
     hours -= 1;
   }
   
-  /*
-  if (hours == 0){ // Convert 24hr to 12hr time
-    hours = 12;
+  if (twelve_hr_time){
+    if (hours == 0){ // Convert 24hr to 12hr time
+      hours = 12;
+    }
+    if (hours > 12){ // Convert 24hr to 12hr time
+      hours   -= 12;
+    }
   }
-  if (hours > 12){ // Convert 24hr to 12hr time
-    hours   -= 12;
-  }
-  */
   hour1   = hours / 10; // Get the individual digits
   hour2   = hours % 10;
   min1    = minutes / 10;
   min2    = minutes % 10;
- 
+  //display(9,6,2,4);
   display(hour1, hour2, min1,min2);
-  //Display the individual digits and check every second
   
+  //Display the individual digits and check every second
+  /*
   Serial.print(hours);
   Serial.print(":");
   Serial.print(minutes);
   Serial.print(":");
   Serial.println(seconds);
+  */
   //Debugging code
 
   delay(1000);
