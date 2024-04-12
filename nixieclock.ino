@@ -10,7 +10,7 @@ int out_pin_num = 3;
 int in_pin_num = 2;
 int in_loop, out_loop;
 bool daylight_savings = true;
-bool twelve_hr_time = false;
+bool twelve_hr_time = True;
 
 byte shiftarray[5];  // Shift array
 
