@@ -10,7 +10,8 @@ int out_pin_num = 3;
 int in_pin_num = 2;
 int in_loop, out_loop;
 bool daylight_savings = true;
-bool twelve_hr_time = true;
+bool twelve_hr_time = false;
+bool dim = false;
 
 byte shiftarray[5];  // Shift array
 
@@ -80,7 +81,14 @@ void loop() {
   min2 = minutes % 10;
 
   display(hour1, hour2, min1, min2);
-  delay(500);
+  if (dim){
+    delay(1);
+    clear();
+    delay(3);
+  }
+  else{
+    delay(500);
+  }
 }
 int dec2bin(int exp) {
   // Turn the time digits into 2^TIME_DIGIT as that is what
