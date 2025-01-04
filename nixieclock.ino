@@ -9,7 +9,7 @@ int inputpins[] = { 4, 5 };
 int out_pin_num = 3;
 int in_pin_num = 2;
 int in_loop, out_loop;
-bool daylight_savings = true;
+bool daylight_savings = false;
 bool twelve_hr_time = false;
 bool dim = false;
 
@@ -37,7 +37,7 @@ void loop() {
   time_t t;
   tmElements_t tm;
   int hours, minutes, seconds;
-  int hour1, hour2, min1, min2;
+  int hour1, hour2, min1, min2, sec1, sec2;
   // Setting local variables
 
 
@@ -79,8 +79,11 @@ void loop() {
   hour2 = hours % 10;
   min1 = minutes / 10;
   min2 = minutes % 10;
+  sec1 = seconds / 10;
+  sec2 = seconds % 10;
 
   display(hour1, hour2, min1, min2);
+  print(hour1, hour2, min1, min2, sec1, sec2);
   if (dim){
     delay(1);
     clear();
@@ -90,6 +93,7 @@ void loop() {
     delay(500);
   }
 }
+
 int dec2bin(int exp) {
   // Turn the time digits into 2^TIME_DIGIT as that is what
   // The shift registers need to show correct value
@@ -97,6 +101,7 @@ int dec2bin(int exp) {
   result <<= exp;
   return result;
 }
+
 void prepshift(int value1, int value2, int value3, int value4) {
   // Function takes 4 10-bit values and transforms them into
   // 5 8-bit values that can be shifted to registers
@@ -148,4 +153,13 @@ void display(int digit1, int digit2, int digit3, int digit4) {
   shiftOut(outputpins[0], outputpins[1], MSBFIRST, shiftarray[0]);
   digitalWrite(outputpins[2], HIGH);  // Set clock pin high
   // Once done shifting the shifting registers push their vals onto the register with a rising edge clock pulse
+}
+
+void print(int digit1, int digit2, int digit3, int digit4, int digit5, int digit6) {
+  Serial.print(digit1);
+  Serial.print(digit2);
+  Serial.print(":");
+  Serial.print(digit3);
+  Serial.print(digit4);
+  Serial.print("\n");
 }
