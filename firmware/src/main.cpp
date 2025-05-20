@@ -1,6 +1,6 @@
-#include <Wire.h>
+#include <Arduino.h>
+#include <string.h>
 #include <DS3232RTC.h>
-#include <Streaming.h>
 
 DS3232RTC myRTC;
 
@@ -9,22 +9,28 @@ int inputpins[] = { 4, 5 };
 int out_pin_num = 3;
 int in_pin_num = 2;
 int in_loop, out_loop;
-bool daylight_savings = false;
 bool twelve_hr_time = false;
 bool dim = false;
 
 byte shiftarray[5];  // Shift array
 
+void clear();
+int dec2bin(int exp);
+void prepshift(int value1, int value2, int value3, int value4);
+void display(int digit1, int digit2, int digit3, int digit4);
+
 void setup() {
   clear();
+
+  // Setting input pins
   for (in_loop = 0; in_loop < in_pin_num; in_loop++) {
     pinMode(inputpins[in_loop], INPUT);
   }
-  // Setting input pins
+  
+  // Setting output pins
   for (out_loop = 0; out_loop < out_pin_num; out_loop++) {
     pinMode(outputpins[out_loop], OUTPUT);
   }
-  // Setting output pins
 
   Serial.begin(9600);  // remove "//" to create serial monitor
   myRTC.begin();
@@ -33,24 +39,24 @@ void setup() {
 }
 
 void loop() {
-  static time_t tLast;
   time_t t;
   tmElements_t tm;
   int hours, minutes, seconds;
-  int hour1, hour2, min1, min2, sec1, sec2;
+  int hour1, hour2, min1, min2;
   // Setting local variables
 
 
   if (Serial.available() >= 12) {
     // Code to set RTC time via Serial Monitor
-    // Format: yy/mm/dd/hh/mm/ss
+    // Format: yy/mm/dd/hh/mm/ss/wd
 
-    tm.Year = Serial.parseInt() + 30;
-    tm.Month = Serial.parseInt();
-    tm.Day = Serial.parseInt();
-    tm.Hour = Serial.parseInt();
+    tm.Year   = Serial.parseInt() + 30;
+    tm.Month  = Serial.parseInt();
+    tm.Day    = Serial.parseInt();
+    tm.Hour   = Serial.parseInt();
     tm.Minute = Serial.parseInt();
     tm.Second = Serial.parseInt();
+    tm.Wday   = Serial.parseInt();
 
     t = makeTime(tm);
     myRTC.set(t);
@@ -60,11 +66,6 @@ void loop() {
   hours = hour();  // Get time and put into local vars (remove -1 for daylight savings)
   minutes = minute();
   seconds = second();
-
-  if (daylight_savings) {
-    hours += 1;
-    hours = hours % 24;
-  }
   
   if (twelve_hr_time) {
     if (hours == 0) {  // Convert 24hr to 12hr time
@@ -79,11 +80,19 @@ void loop() {
   hour2 = hours % 10;
   min1 = minutes / 10;
   min2 = minutes % 10;
-  sec1 = seconds / 10;
-  sec2 = seconds % 10;
 
   display(hour1, hour2, min1, min2);
-  print(hour1, hour2, min1, min2, sec1, sec2);
+
+  char buf[200];
+  char dotwString[10]; 
+  char monthString[10];
+
+  memcpy(dotwString,  dayStr(weekday()), sizeof(dotwString));
+  memcpy(monthString, monthStr(month()), sizeof(monthString));
+
+  snprintf(buf, sizeof(buf), "Time: %d:%d:%d, Date: %s %s %d %d", hours, minutes, seconds, dotwString, monthString, day(), year());
+  Serial.println(buf);
+
   if (dim){
     delay(1);
     clear();
@@ -120,6 +129,7 @@ void prepshift(int value1, int value2, int value3, int value4) {
   shiftarray[4] = (value4 >> 2);
   // Bits 0-7 of shiftarray[0] are bits 2-9 of value4
 }
+
 void clear() {
   //Clears the clock by setting all transistors to low/out of saturation
   digitalWrite(outputpins[2], LOW);
@@ -128,6 +138,7 @@ void clear() {
   }
   digitalWrite(outputpins[2], HIGH);
 }
+
 void display(int digit1, int digit2, int digit3, int digit4) {
   clear();
 
