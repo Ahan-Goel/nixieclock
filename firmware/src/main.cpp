@@ -48,11 +48,11 @@ void loop() {
 
   if (Serial.available() >= 12) {
     // Code to set RTC time via Serial Monitor
-    // Format: yy/mm/dd/hh/mm/ss/wd
-
-    tm.Year   = Serial.parseInt() + 30;
+    // Format: mm/dd/yy/hh/mm/ss/wd
+    
     tm.Month  = Serial.parseInt();
     tm.Day    = Serial.parseInt();
+    tm.Year   = Serial.parseInt() + 30;
     tm.Hour   = Serial.parseInt();
     tm.Minute = Serial.parseInt();
     tm.Second = Serial.parseInt();
